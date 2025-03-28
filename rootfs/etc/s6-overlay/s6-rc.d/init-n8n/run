@@ -9,7 +9,7 @@ bashio::log.level "debug"
 bashio::log.info "Initializing n8n configuration..."
 bashio::log.debug "Niveau de log défini à DEBUG pour init-n8n"
 
-N8N_DATA_DIR="/home/node/.n8n"
+N8N_DATA_DIR="/data/n8n_data"  # Changement ici
 ENV_FILE="${N8N_DATA_DIR}/.env"
 bashio::log.debug "Création du répertoire ${N8N_DATA_DIR} si nécessaire..."
 mkdir -p "${N8N_DATA_DIR}" || { bashio::log.error "Échec de mkdir ${N8N_DATA_DIR}"; exit 1; }

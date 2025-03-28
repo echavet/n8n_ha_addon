@@ -3,16 +3,18 @@
 # Runs the n8n service
 
 chmod +x "$0"
+bashio::log.level "debug"  # Ajoute cette ligne
 
 bashio::log.info "Starting n8n service..."
 
-N8N_DATA_DIR="/home/node/.n8n"
+N8N_DATA_DIR="/data/n8n_data"
 ENV_FILE="${N8N_DATA_DIR}/.env"
 
 # Charger les variables depuis .env
 if [ -f "${ENV_FILE}" ]; then
   bashio::log.info "Chargement des variables depuis ${ENV_FILE}..."
-  set -a  # Active l'export automatique des variables
+  bashio::log.debug "Contenu de ${ENV_FILE} avant chargement : $(cat ${ENV_FILE})"
+  set -a
   source "${ENV_FILE}"
   set +a
 else
@@ -27,4 +29,5 @@ if [ -z "$N8N_HOST" ] || [ -z "$N8N_PORT" ] || [ -z "$N8N_WEBHOOK_URL" ]; then
 fi
 
 bashio::log.info "Lancement de n8n avec les variables d'environnement..."
+bashio::log.debug "Variables d'environnement chargées : $(env | grep N8N_)"
 exec n8n start
