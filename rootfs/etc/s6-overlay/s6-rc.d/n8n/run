@@ -1,0 +1,17 @@
+#!/usr/bin/with-contenv bashio
+# Home Assistant Community Add-on: n8n
+# Runs the n8n service
+
+set +u
+chmod +x "$0"
+
+bashio::log.info "Starting n8n service..."
+
+# Vérifier les variables essentielles
+if [ -z "$N8N_HOST" ] || [ -z "$N8N_PORT" ] || [ -z "$N8N_WEBHOOK_URL" ]; then
+  bashio::log.error "Variables essentielles manquantes (N8N_HOST, N8N_PORT, N8N_WEBHOOK_URL) !"
+  exit 1
+fi
+
+bashio::log.info "Lancement de n8n avec les variables d'environnement..."
+exec n8n start

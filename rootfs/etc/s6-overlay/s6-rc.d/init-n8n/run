@@ -1,0 +1,46 @@
+#!/usr/bin/with-contenv bashio
+# Home Assistant Community Add-on: n8n
+# Initializes n8n environment variables
+
+set +u
+chmod +x "$0"
+
+bashio::log.info "Initializing n8n configuration..."
+
+N8N_DATA_DIR="/home/node/.n8n"
+ENV_FILE="${N8N_DATA_DIR}/.env"
+mkdir -p "${N8N_DATA_DIR}"
+chown -R root:root "${N8N_DATA_DIR}"
+chmod -R 700 "${N8N_DATA_DIR}"
+
+# Initialiser .env avec des valeurs par défaut s'il n'existe pas
+if [ ! -f "${ENV_FILE}" ]; then
+  bashio::log.info "Création de ${ENV_FILE} avec des valeurs par défaut..."
+  cat <<EOV > "${ENV_FILE}"
+# Fichier de configuration n8n - éditez ces valeurs selon vos besoins
+# Voir https://docs.n8n.io/hosting/configuration/environment-variables/
+N8N_LOG_LEVEL=info
+N8N_COMMUNITY_PACKAGES_ENABLED=false
+N8N_PORT=5678
+EOV
+fi
+
+# Lire les options depuis config.yaml
+webhook_url=$(bashio::config 'webhook_url')
+log_level=$(bashio::config 'log_level')
+protocol=$(echo "$webhook_url" | grep -Eo '^https?')
+host=$(echo "$webhook_url" | sed -E 's|^https?://||' | sed -E 's|[:/].*||')
+
+# Exporter les variables pour n8n
+export N8N_WEBHOOK_URL="${webhook_url}"
+export N8N_LOG_LEVEL="${log_level}"
+export N8N_PROTOCOL="${protocol}"
+export N8N_HOST="${host}"
+export N8N_PORT=5678
+export N8N_LISTEN_ADDRESS="0.0.0.0"
+export N8N_USER_FOLDER="${N8N_DATA_DIR}"
+
+bashio::log.info "Variables d'environnement définies :"
+env | grep N8N | while read -r line; do bashio::log.info "$line"; done
+
+exit 0

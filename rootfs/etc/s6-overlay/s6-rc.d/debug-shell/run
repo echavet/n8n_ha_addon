@@ -1,0 +1,8 @@
+#!/usr/bin/with-contenv bashio
+# Home Assistant Community Add-on: n8n
+# Temporary debug shell to keep container alive
+
+chmod +x "$0"
+bashio::log.info "Debug shell started. Container will stay alive."
+bashio::log.info "Use 'docker exec -it <container> bash' to access."
+exec tail -f /dev/null

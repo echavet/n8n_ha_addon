@@ -1,0 +1,28 @@
+name: "n8n-ha-addon"
+version: "2.0.0"
+slug: "n8n-ha-addon"
+description: "Lance une instance de n8n pour l'automatisation des workflows"
+init: false
+arch:
+  - aarch64
+  - amd64
+  - armhf
+  - armv7
+  - i386
+ports:
+  5678/tcp: 5678
+ports_description:
+  5678/tcp: "Port pour accéder à l'interface web de n8n"
+map:
+  - config:rw
+  - n8n_data:rw
+url: "https://github.com/echavet/n8n-ha-addon"
+startup: "application"
+boot: "auto"
+host_network: true
+options:
+  webhook_url: "http://localhost:5678"
+  log_level: "debug"
+schema:
+  webhook_url: str
+  log_level: list(debug|info|warn|error)?debug
