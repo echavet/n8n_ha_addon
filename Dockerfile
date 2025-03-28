@@ -14,3 +14,5 @@ WORKDIR /data
 COPY rootfs /
 
 RUN find /etc/s6-overlay/s6-rc.d/ -name "run" -exec chmod +x {} \;
+
+ENV __BASHIO_LOG_LEVEL=1
