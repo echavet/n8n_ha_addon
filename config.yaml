@@ -1,5 +1,5 @@
 name: "n8n-ha-addon V2"
-version: "2.0.3"
+version: "2.0.4"
 slug: "n8n-ha-addon"
 description: "Lance une instance de n8n pour l'automatisation des workflows"
 init: false
@@ -16,7 +16,7 @@ ports_description:
 map:
   - config:rw
   - n8n_data:rw
-url: "https://github.com/echavet/n8n-ha-addon"
+url: "https://github.com/echavet/n8n_ha_addon"
 startup: "application"
 boot: "auto"
 host_network: true
@@ -29,5 +29,3 @@ schema:
   webhook_url: str
   env:
     - str?
-
-log_level: debug 

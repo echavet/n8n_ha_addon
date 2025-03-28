@@ -10,4 +10,7 @@ RUN npm install -g n8n
 
 EXPOSE 5678
 WORKDIR /data
+
 COPY rootfs /
+
+RUN find /etc/s6-overlay/s6-rc.d/ -name "run" -exec chmod +x {} \;
