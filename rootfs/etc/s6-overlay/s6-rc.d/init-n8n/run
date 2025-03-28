@@ -37,7 +37,6 @@ if [ ! -f "${ENV_FILE}" ]; then
 # Voir https://docs.n8n.io/hosting/configuration/environment-variables/
 N8N_LOG_LEVEL=info
 N8N_COMMUNITY_PACKAGES_ENABLED=false
-N8N_PORT=5678
 N8N_LISTEN_ADDRESS=0.0.0.0
 EOV
 fi
