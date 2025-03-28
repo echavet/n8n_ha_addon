@@ -39,9 +39,10 @@ N8N_LOG_LEVEL=info
 N8N_COMMUNITY_PACKAGES_ENABLED=false
 N8N_PORT=5678
 N8N_LISTEN_ADDRESS=0.0.0.0
-N8N_USER_FOLDER=/data/n8n_data  # Corrigé ici
 EOV
 fi
+
+update_env_file "N8N_USER_FOLDER" "${N8N_DATA_DIR}"
 
 # Lire les options depuis config.yaml
 bashio::log.debug "Lecture de webhook_url depuis config.yaml..."
@@ -56,6 +57,7 @@ bashio::log.debug "host = ${host}"
 update_env_file "N8N_WEBHOOK_URL" "${webhook_url}"
 update_env_file "N8N_PROTOCOL" "${protocol}"
 update_env_file "N8N_HOST" "${host}"
+
 
 # Lire et appliquer les variables personnalisées depuis la liste env
 if bashio::config.has_value 'env'; then
