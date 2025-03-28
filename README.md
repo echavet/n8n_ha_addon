@@ -61,4 +61,27 @@ env:
   - "N8N_LOG_LEVEL=debug"
   - "N8N_PORT=5678"
   - "N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS=true"
+```
 
+## Notes
+
+    Encryption Key: n8n generates an encryption key automatically on first startup, stored in /data/n8n_data/.n8n/config. Ensure this directory is backed up if you need to preserve credentials or workflows.
+    Task Runners: Consider adding N8N_RUNNERS_ENABLED=true to env to enable task runners, as recommended by n8n for future compatibility.
+    Permissions: The addon sets strict permissions (700) on /data/n8n_data for security.
+
+## Troubleshooting 
+
+    If n8n fails to start, check the logs for errors like missing variables (N8N_HOST, N8N_PORT, N8N_WEBHOOK_URL).
+    Verify the contents of .env on the host:
+
+```bash
+cat /mnt/data/supervisor/addons/data/950c88c9_n8n-ha-addon/n8n_data/.env
+```
+
+## Contributing 
+
+Feel free to submit issues or pull requests to the GitHub repository.
+
+## License
+
+This project is licensed under the MIT License. See the  file for details.
