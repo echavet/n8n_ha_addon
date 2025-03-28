@@ -1,5 +1,5 @@
 name: "n8n-ha-addon V2"
-version: "2.0.4"
+version: "2.0.5"
 slug: "n8n-ha-addon"
 description: "Lance une instance de n8n pour l'automatisation des workflows"
 init: false

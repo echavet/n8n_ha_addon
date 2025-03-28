@@ -2,33 +2,35 @@
 # Home Assistant Community Add-on: n8n
 # Initializes n8n environment variables and manages .env file
 
+set -e  # Arrête le script à la première erreur
 chmod +x "$0"
 
 bashio::log.info "Initializing n8n configuration..."
 
 N8N_DATA_DIR="/home/node/.n8n"
 ENV_FILE="${N8N_DATA_DIR}/.env"
-mkdir -p "${N8N_DATA_DIR}"
-chown -R root:root "${N8N_DATA_DIR}"
-chmod -R 700 "${N8N_DATA_DIR}"
+bashio::log.debug "Création du répertoire ${N8N_DATA_DIR} si nécessaire..."
+mkdir -p "${N8N_DATA_DIR}" || { bashio::log.error "Échec de mkdir ${N8N_DATA_DIR}"; exit 1; }
+bashio::log.debug "Changement des permissions de ${N8N_DATA_DIR}..."
+chown -R root:root "${N8N_DATA_DIR}" || { bashio::log.error "Échec de chown"; exit 1; }
+chmod -R 700 "${N8N_DATA_DIR}" || { bashio::log.error "Échec de chmod"; exit 1; }
 
 # Fonction pour mettre à jour ou ajouter une variable dans .env
 update_env_file() {
   local key="$1"
   local value="$2"
+  bashio::log.debug "Mise à jour de ${key}=${value} dans ${ENV_FILE}"
   if grep -q "^${key}=" "${ENV_FILE}"; then
-    # Si la clé existe, la mettre à jour
-    sed -i "s|^${key}=.*|${key}=${value}|" "${ENV_FILE}"
+    sed -i "s|^${key}=.*|${key}=${value}|" "${ENV_FILE}" || { bashio::log.error "Échec de sed pour ${key}"; exit 1; }
   else
-    # Sinon, l'ajouter
-    echo "${key}=${value}" >> "${ENV_FILE}"
+    echo "${key}=${value}" >> "${ENV_FILE}" || { bashio::log.error "Échec d'ajout de ${key}"; exit 1; }
   fi
 }
 
 # Si .env n'existe pas, le créer avec des valeurs par défaut
 if [ ! -f "${ENV_FILE}" ]; then
   bashio::log.info "Création de ${ENV_FILE} avec des valeurs par défaut..."
-  cat <<EOV > "${ENV_FILE}"
+  cat <<EOV > "${ENV_FILE}" || { bashio::log.error "Échec de création de ${ENV_FILE}"; exit 1; }
 # Fichier de configuration n8n - éditez ces valeurs selon vos besoins
 # Voir https://docs.n8n.io/hosting/configuration/environment-variables/
 N8N_LOG_LEVEL=info
@@ -40,10 +42,13 @@ EOV
 fi
 
 # Lire les options depuis config.yaml
-webhook_url=$(bashio::config 'webhook_url')
-# Extraire protocol et host depuis webhook_url
-protocol=$(echo "$webhook_url" | grep -Eo '^https?')
-host=$(echo "$webhook_url" | sed -E 's|^https?://||' | sed -E 's|[:/].*||')
+bashio::log.debug "Lecture de webhook_url depuis config.yaml..."
+webhook_url=$(bashio::config 'webhook_url') || { bashio::log.error "Échec de lecture de webhook_url"; exit 1; }
+bashio::log.debug "webhook_url = ${webhook_url}"
+protocol=$(echo "$webhook_url" | grep -Eo '^https?') || { bashio::log.error "Échec de l'extraction du protocole"; exit 1; }
+bashio::log.debug "protocol = ${protocol}"
+host=$(echo "$webhook_url" | sed -E 's|^https?://||' | sed -E 's|[:/].*||') || { bashio::log.error "Échec de l'extraction de l'hôte"; exit 1; }
+bashio::log.debug "host = ${host}"
 
 # Mettre à jour .env avec les valeurs de l'onglet Configuration
 update_env_file "N8N_WEBHOOK_URL" "${webhook_url}"
@@ -52,16 +57,19 @@ update_env_file "N8N_HOST" "${host}"
 
 # Lire et appliquer les variables personnalisées depuis la liste env
 if bashio::config.has_value 'env'; then
+  bashio::log.debug "Lecture des variables personnalisées depuis env..."
   bashio::config 'env' | while read -r env_line; do
     if [[ -n "$env_line" ]]; then
-      key=$(echo "$env_line" | cut -d'=' -f1)
-      value=$(echo "$env_line" | cut -d'=' -f2-)
+      key=$(echo "$env_line" | cut -d'=' -f1) || { bashio::log.error "Échec de l'extraction de la clé"; exit 1; }
+      value=$(echo "$env_line" | cut -d'=' -f2-) || { bashio::log.error "Échec de l'extraction de la valeur"; exit 1; }
+      bashio::log.debug "Application de ${key}=${value}"
       update_env_file "$key" "$value"
     fi
   done
 fi
 
 bashio::log.info "Fichier .env mis à jour avec les valeurs de configuration :"
-cat "${ENV_FILE}" | while read -r line; do bashio::log.info "$line"; done
+cat "${ENV_FILE}" | while read -r line; do bashio::log.info "$line"; done || { bashio::log.error "Échec de lecture de ${ENV_FILE}"; exit 1; }
 
+bashio::log.info "Initialisation terminée avec succès"
 exit 0
