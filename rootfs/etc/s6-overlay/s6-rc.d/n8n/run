@@ -26,8 +26,8 @@ else
 fi
 
 # Vérifier les variables essentielles
-if [ -z "$N8N_HOST" ] || [ -z "$N8N_WEBHOOK_URL" ]; then
-  bashio::log.error "Variables essentielles manquantes (N8N_HOST, N8N_WEBHOOK_URL) !"
+if [ -z "$N8N_HOST" ]; then
+  bashio::log.error "Variables essentielles manquantes (N8N_HOST) !"
   exit 1
 fi
 

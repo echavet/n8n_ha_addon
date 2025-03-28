@@ -1,5 +1,5 @@
 name: "n8n-ha-addon V2"
-version: "2.0.15"
+version: "2.1.0"
 slug: "n8n-ha-addon"
 description: "Lance une instance de n8n pour l'automatisation des workflows"
 init: false
@@ -21,11 +21,11 @@ startup: "application"
 boot: "auto"
 host_network: true
 options:
-  webhook_url: "http://localhost:5678"
+  n8n_web_url: "http://localhost:5678"
   env:
     - "N8N_LOG_LEVEL=debug"
     - "N8N_PORT=5678"
 schema:
-  webhook_url: str
+  n8n_web_url: str
   env:
     - str?
