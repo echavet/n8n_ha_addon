@@ -1,8 +1,7 @@
 #!/usr/bin/with-contenv bashio
 # Home Assistant Community Add-on: n8n
-# Initializes n8n environment variables
+# Initializes n8n environment variables and manages .env file
 
-set +u
 chmod +x "$0"
 
 bashio::log.info "Initializing n8n configuration..."
@@ -13,7 +12,20 @@ mkdir -p "${N8N_DATA_DIR}"
 chown -R root:root "${N8N_DATA_DIR}"
 chmod -R 700 "${N8N_DATA_DIR}"
 
-# Initialiser .env avec des valeurs par défaut s'il n'existe pas
+# Fonction pour mettre à jour ou ajouter une variable dans .env
+update_env_file() {
+  local key="$1"
+  local value="$2"
+  if grep -q "^${key}=" "${ENV_FILE}"; then
+    # Si la clé existe, la mettre à jour
+    sed -i "s|^${key}=.*|${key}=${value}|" "${ENV_FILE}"
+  else
+    # Sinon, l'ajouter
+    echo "${key}=${value}" >> "${ENV_FILE}"
+  fi
+}
+
+# Si .env n'existe pas, le créer avec des valeurs par défaut
 if [ ! -f "${ENV_FILE}" ]; then
   bashio::log.info "Création de ${ENV_FILE} avec des valeurs par défaut..."
   cat <<EOV > "${ENV_FILE}"
@@ -22,25 +34,34 @@ if [ ! -f "${ENV_FILE}" ]; then
 N8N_LOG_LEVEL=info
 N8N_COMMUNITY_PACKAGES_ENABLED=false
 N8N_PORT=5678
+N8N_LISTEN_ADDRESS=0.0.0.0
+N8N_USER_FOLDER=/home/node/.n8n
 EOV
 fi
 
 # Lire les options depuis config.yaml
 webhook_url=$(bashio::config 'webhook_url')
-log_level=$(bashio::config 'log_level')
+# Extraire protocol et host depuis webhook_url
 protocol=$(echo "$webhook_url" | grep -Eo '^https?')
 host=$(echo "$webhook_url" | sed -E 's|^https?://||' | sed -E 's|[:/].*||')
 
-# Exporter les variables pour n8n
-export N8N_WEBHOOK_URL="${webhook_url}"
-export N8N_LOG_LEVEL="${log_level}"
-export N8N_PROTOCOL="${protocol}"
-export N8N_HOST="${host}"
-export N8N_PORT=5678
-export N8N_LISTEN_ADDRESS="0.0.0.0"
-export N8N_USER_FOLDER="${N8N_DATA_DIR}"
+# Mettre à jour .env avec les valeurs de l'onglet Configuration
+update_env_file "N8N_WEBHOOK_URL" "${webhook_url}"
+update_env_file "N8N_PROTOCOL" "${protocol}"
+update_env_file "N8N_HOST" "${host}"
 
-bashio::log.info "Variables d'environnement définies :"
-env | grep N8N | while read -r line; do bashio::log.info "$line"; done
+# Lire et appliquer les variables personnalisées depuis la liste env
+if bashio::config.has_value 'env'; then
+  bashio::config 'env' | while read -r env_line; do
+    if [[ -n "$env_line" ]]; then
+      key=$(echo "$env_line" | cut -d'=' -f1)
+      value=$(echo "$env_line" | cut -d'=' -f2-)
+      update_env_file "$key" "$value"
+    fi
+  done
+fi
+
+bashio::log.info "Fichier .env mis à jour avec les valeurs de configuration :"
+cat "${ENV_FILE}" | while read -r line; do bashio::log.info "$line"; done
 
 exit 0

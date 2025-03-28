@@ -2,10 +2,23 @@
 # Home Assistant Community Add-on: n8n
 # Runs the n8n service
 
-set +u
 chmod +x "$0"
 
 bashio::log.info "Starting n8n service..."
+
+N8N_DATA_DIR="/home/node/.n8n"
+ENV_FILE="${N8N_DATA_DIR}/.env"
+
+# Charger les variables depuis .env
+if [ -f "${ENV_FILE}" ]; then
+  bashio::log.info "Chargement des variables depuis ${ENV_FILE}..."
+  set -a  # Active l'export automatique des variables
+  source "${ENV_FILE}"
+  set +a
+else
+  bashio::log.error "Fichier ${ENV_FILE} introuvable !"
+  exit 1
+fi
 
 # Vérifier les variables essentielles
 if [ -z "$N8N_HOST" ] || [ -z "$N8N_PORT" ] || [ -z "$N8N_WEBHOOK_URL" ]; then
