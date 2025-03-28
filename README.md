@@ -37,10 +37,12 @@ This is a Home Assistant addon that runs an instance of [n8n](https://n8n.io/), 
 - Use n8n to create workflows, leveraging its extensive node library to automate tasks with Home Assistant and other services.
 
 ### Persistent Data
+
 - Configuration and runtime data (e.g., `.env`, encryption key in `.n8n/config`) are stored in `/data/n8n_data`, which is mapped to `/mnt/data/supervisor/addons/data/950c88c9_n8n-ha-addon/n8n_data` on the host.
 - This ensures that your workflows and settings persist across restarts.
 
 ### Logs
+
 - Debug logs are enabled by default (`bashio::log.level "debug"`) for both initialization and runtime.
 - View logs in the Home Assistant UI under **Supervisor > Add-ons > n8n HA Addon > Logs**.
 
@@ -52,9 +54,11 @@ This is a Home Assistant addon that runs an instance of [n8n](https://n8n.io/), 
 | `env`          | List of custom environment variables for n8n    | `N8N_LOG_LEVEL=debug`<br>`N8N_PORT=5678` |
 
 Example configuration in Home Assistant:
+
 ```yaml
 webhook_url: "https://n8n.yourdomain.com"
 env:
   - "N8N_LOG_LEVEL=debug"
   - "N8N_PORT=5678"
   - "N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS=true"
+
