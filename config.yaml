@@ -22,7 +22,7 @@ boot: "auto"
 host_network: true
 options:
   webhook_url: "http://localhost:5678"
-  log_level: "debug"
 schema:
   webhook_url: str
-  log_level: list(debug|info|warn|error)?debug
+
+log_level: debug
