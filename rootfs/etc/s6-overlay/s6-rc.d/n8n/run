@@ -3,7 +3,7 @@
 # Runs the n8n service
 
 chmod +x "$0"
-bashio::log.level "debug"  # Ajoute cette ligne
+bashio::log.level "debug"
 
 bashio::log.info "Starting n8n service..."
 
@@ -13,10 +13,13 @@ ENV_FILE="${N8N_DATA_DIR}/.env"
 # Charger les variables depuis .env
 if [ -f "${ENV_FILE}" ]; then
   bashio::log.info "Chargement des variables depuis ${ENV_FILE}..."
-  bashio::log.debug "Contenu de ${ENV_FILE} avant chargement : $(cat ${ENV_FILE})"
-  set -a
-  source "${ENV_FILE}"
+  bashio::log.debug "Contenu de ${ENV_FILE} avant chargement :"
+  cat "${ENV_FILE}" | while read -r line; do bashio::log.debug "$line"; done
+  set -a  # Active l'export automatique des variables
+  source "${ENV_FILE}" || { bashio::log.error "Échec du chargement de ${ENV_FILE}"; exit 1; }
   set +a
+  bashio::log.debug "Variables d'environnement après chargement :"
+  env | grep N8N | while read -r line; do bashio::log.debug "$line"; done
 else
   bashio::log.error "Fichier ${ENV_FILE} introuvable !"
   exit 1
@@ -28,6 +31,12 @@ if [ -z "$N8N_HOST" ] || [ -z "$N8N_PORT" ] || [ -z "$N8N_WEBHOOK_URL" ]; then
   exit 1
 fi
 
+# Vérifier N8N_USER_FOLDER
+bashio::log.debug "N8N_USER_FOLDER défini à : ${N8N_USER_FOLDER}"
+if [ ! -d "${N8N_USER_FOLDER}" ]; then
+  bashio::log.error "Répertoire ${N8N_USER_FOLDER} n'existe pas !"
+  exit 1
+fi
+
 bashio::log.info "Lancement de n8n avec les variables d'environnement..."
-bashio::log.debug "Variables d'environnement chargées : $(env | grep N8N_)"
 exec n8n start
