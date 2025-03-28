@@ -9,7 +9,7 @@ bashio::log.level "debug"
 bashio::log.info "Initializing n8n configuration..."
 bashio::log.debug "Niveau de log défini à DEBUG pour init-n8n"
 
-N8N_DATA_DIR="/data/n8n_data"  # Changement ici
+N8N_DATA_DIR="/data/n8n_data"
 ENV_FILE="${N8N_DATA_DIR}/.env"
 bashio::log.debug "Création du répertoire ${N8N_DATA_DIR} si nécessaire..."
 mkdir -p "${N8N_DATA_DIR}" || { bashio::log.error "Échec de mkdir ${N8N_DATA_DIR}"; exit 1; }
@@ -39,7 +39,7 @@ N8N_LOG_LEVEL=info
 N8N_COMMUNITY_PACKAGES_ENABLED=false
 N8N_PORT=5678
 N8N_LISTEN_ADDRESS=0.0.0.0
-N8N_USER_FOLDER=/home/node/.n8n
+N8N_USER_FOLDER=/data/n8n_data  # Corrigé ici
 EOV
 fi
 
@@ -60,10 +60,8 @@ update_env_file "N8N_HOST" "${host}"
 # Lire et appliquer les variables personnalisées depuis la liste env
 if bashio::config.has_value 'env'; then
   bashio::log.debug "Lecture des variables personnalisées depuis env..."
-  # Stocker la sortie de bashio::config 'env' dans une variable pour débogage
   env_config=$(bashio::config 'env') || { bashio::log.error "Échec de lecture de env depuis config"; exit 1; }
   bashio::log.debug "Contenu brut de env_config : ${env_config}"
-  # Traiter chaque ligne avec un tableau pour éviter les problèmes de pipe
   IFS=$'\n' read -r -d '' -a env_lines <<< "$env_config" || true
   for env_line in "${env_lines[@]}"; do
     if [[ -n "$env_line" ]]; then
