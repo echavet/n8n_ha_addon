@@ -2,12 +2,12 @@
 # Home Assistant Community Add-on: n8n
 # Initializes n8n environment variables and manages .env file
 
-set -e  # Arrête le script à la première erreur
+set -e
 chmod +x "$0"
 
 bashio::log.level "debug"
-
 bashio::log.info "Initializing n8n configuration..."
+bashio::log.debug "Niveau de log défini à DEBUG pour init-n8n"
 
 N8N_DATA_DIR="/home/node/.n8n"
 ENV_FILE="${N8N_DATA_DIR}/.env"
@@ -60,10 +60,16 @@ update_env_file "N8N_HOST" "${host}"
 # Lire et appliquer les variables personnalisées depuis la liste env
 if bashio::config.has_value 'env'; then
   bashio::log.debug "Lecture des variables personnalisées depuis env..."
-  bashio::config 'env' | while read -r env_line; do
+  # Stocker la sortie de bashio::config 'env' dans une variable pour débogage
+  env_config=$(bashio::config 'env') || { bashio::log.error "Échec de lecture de env depuis config"; exit 1; }
+  bashio::log.debug "Contenu brut de env_config : ${env_config}"
+  # Traiter chaque ligne avec un tableau pour éviter les problèmes de pipe
+  IFS=$'\n' read -r -d '' -a env_lines <<< "$env_config" || true
+  for env_line in "${env_lines[@]}"; do
     if [[ -n "$env_line" ]]; then
-      key=$(echo "$env_line" | cut -d'=' -f1) || { bashio::log.error "Échec de l'extraction de la clé"; exit 1; }
-      value=$(echo "$env_line" | cut -d'=' -f2-) || { bashio::log.error "Échec de l'extraction de la valeur"; exit 1; }
+      bashio::log.debug "Traitement de la ligne : ${env_line}"
+      key=$(echo "$env_line" | cut -d'=' -f1) || { bashio::log.error "Échec de l'extraction de la clé pour ${env_line}"; exit 1; }
+      value=$(echo "$env_line" | cut -d'=' -f2-) || { bashio::log.error "Échec de l'extraction de la valeur pour ${env_line}"; exit 1; }
       bashio::log.debug "Application de ${key}=${value}"
       update_env_file "$key" "$value"
     fi
