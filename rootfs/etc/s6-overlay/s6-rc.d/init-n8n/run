@@ -5,6 +5,8 @@
 set -e  # Arrête le script à la première erreur
 chmod +x "$0"
 
+bashio::log.level "debug"
+
 bashio::log.info "Initializing n8n configuration..."
 
 N8N_DATA_DIR="/home/node/.n8n"
